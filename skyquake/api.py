@@ -1,6 +1,6 @@
 from lxml import html as html_module
-from config import DEFAULT_REGION, SEARCH_URL, PAGE_LIMIT
-from utils import build_base_url
+from .config import DEFAULT_REGION, SEARCH_URL, PAGE_LIMIT
+from .utils import build_base_url
 
 
 class AmzSearch(object):
