@@ -1,4 +1,4 @@
-from .config import DEFAULT_REGION, REGION_CODES, BASE_URL
+from config import DEFAULT_REGION, REGION_CODES, BASE_URL
 
 
 def build_base_url(region=DEFAULT_REGION):

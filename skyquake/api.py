@@ -1,6 +1,7 @@
 from lxml import html as html_module
-from .config import DEFAULT_REGION, SEARCH_URL, PAGE_LIMIT
-from .utils import build_base_url
+from config import DEFAULT_REGION, SEARCH_URL, PAGE_LIMIT, HEADERS, REVIEW_URL
+from utils import build_base_url
+from requests import get
 
 
 class AmzSearch(object):
@@ -49,6 +50,26 @@ class AmzSearch(object):
     def __init__(self, query=None, page=1, region=DEFAULT_REGION, url=None, html=None, html_element=None, products=None):
         self._urls = [self.build_url(query=query, page_num=p, region=region)
                       for p in range(1, page + 1)] if page < PAGE_LIMIT else []
+        self.get_content(self._urls[0])
+
+    def get_content(self, url):
+        response = get(url, headers=HEADERS, verify=False, timeout=30)
+        parser = html_module.fromstring(response.text)
+        path = '//a[@class="a-link-normal a-text-normal"]'
+
+        urls = parser.xpath(path)
+
+        for u in urls[2:5]:
+            name = u.cssselect("span")
+            print(name[0].text)
+            print(u.get('href'))
+            # print(html_module.tostring(u))
+
+        print(len(urls))
+
+        # print(html_module.tostring(urls[2]))
+
+        return response
 
     def __repr__(self):
         out = []
@@ -222,7 +243,56 @@ class AmzSearch(object):
                          index=self._indexes)
 
 
+class AmzProduct(object):
+    """
+    product
+    """
+
+    def __init__(self, url, page=1, region=DEFAULT_REGION):
+        self._urls = [self.build_review_url(url, page_num=p, region=region)
+                      for p in range(1, page + 1)] if page < PAGE_LIMIT else []
+        # for u in self._urls:
+        self.get_content(self._urls[0])
+
+    def get_content(self, url):
+        response = get(url, headers=HEADERS, verify=False, timeout=30)
+        parser = html_module.fromstring(response.text)
+        path = '//div[@data-hook="review"]'
+
+        reviews = parser.xpath(path)
+
+        for r in reviews:
+            name = r.cssselect("div.a-profile-content > span")
+            rate = r.cssselect("span.a-icon-alt")
+            date = r.cssselect("span.review-date")
+            title = r.cssselect("a.review-title > span")
+            content = r.cssselect("span.review-text-content > span")
+            print(name[0].text)
+            print(rate[0].text[:3])
+            print(date[0].text)
+            print(title[0].text)
+            print(content[0].text)
+            # print(u.get('href'))
+            # print(html_module.tostring(r))
+
+        print(len(reviews))
+
+        # print(html_module.tostring(reviews[2]))
+
+        return response
+
+    def build_review_url(self, url, page_num=1, region=DEFAULT_REGION):
+        name = "Logitech-MK270-Wireless-Keyboard-Windows"
+        asin = "B00CL6353A"
+
+        base = build_base_url(region)
+        url = REVIEW_URL % (base, name, asin, page_num)
+
+        return url
+
+
 if __name__ == '__main__':
-    amz = AmzSearch('keyboard', page=5, region='UK')
-    last_item = amz.rget(-1)
-    print(amz._urls)
+    # amz = AmzSearch('keyboard', page=5, region='UK')
+    # last_item = amz.rget(-1)
+    pro = AmzProduct("url", page=2, region="UK")
+    # print(amz._urls)

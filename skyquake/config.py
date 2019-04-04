@@ -27,3 +27,6 @@ QUERY_BUILD_DICT = {GAT_ID: 'alhs-20'}
 
 # SEARCH_URL = '%s/s/ref=nb_sb_noss?sf=qz&keywords=%s&ie=UTF8&unfiltered=1&page=%s'
 SEARCH_URL = '%s/s?k=%s&page=%s'
+
+# /Authentic-Cigarette-Starter-3000mAh-PEACEVAPETM/product-reviews/B079RXYMF8/ref=cm_cr_getr_d_paging_btm_next_3?ie=UTF8&reviewerType=all_reviews&pageNumber=2
+REVIEW_URL = "%s/%s/product-reviews/%s/?reviewerType=all_reviews&pageNumber=%s"
