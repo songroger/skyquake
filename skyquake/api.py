@@ -260,20 +260,25 @@ class AmzProduct(object):
     """
     product
     """
+    _reviews = []
 
-    def __init__(self, url, page=1, region=DEFAULT_REGION):
-        self._urls = [self.build_review_url(url, page_num=p, region=region)
+    def __init__(self, name, asin, page=1, region=DEFAULT_REGION):
+        self._urls = [self.build_review_url(name, asin, page_num=p, region=region)
                       for p in range(1, page + 1)] if page < PAGE_LIMIT else []
-        # for u in self._urls:
-        print(self._urls)
-        self.get_content(self._urls[0])
+        self._baseurl = build_base_url(region)
+        self.review_url = self.build_review_url(name, asin, page_num=page, region=region)
+        # self.get_content(self.review_url)
 
-    def get_content(self, url):
+    def get_content(self, url=None):
+        if not url:
+            url = self.review_url
         response = get(url, headers=HEADERS, verify=False, timeout=30)
         parser = html_module.fromstring(response.text)
         path = '//div[@data-hook="review"]'
+        next_path = '//li[@class="a-last"]'
 
         reviews = parser.xpath(path)
+        next_url_ele = parser.xpath(next_path)
 
         for r in reviews:
             name = r.cssselect("div.a-profile-content > span")
@@ -281,23 +286,31 @@ class AmzProduct(object):
             date = r.cssselect("span.review-date")
             title = r.cssselect("a.review-title > span")
             content = r.cssselect("span.review-text-content > span")
-            print(name[0].text)
-            print(rate[0].text[:3])
-            print(date[0].text)
-            print(title[0].text)
-            print(content[0].text)
-            # print(u.get('href'))
+            review_id = r.xpath('@id')[0]
+            self._reviews.append((name[0].text, title[0].text, content[0].text,
+                                  date[0].text, rate[0].text[:3], review_id
+                                  ))
+            # print(name[0].text)
+            # print(rate[0].text[:3])
+            # print(date[0].text)
+            # print(title[0].text)
+            # print(content[0].text)
             # print(html_module.tostring(r))
 
-        print(len(reviews))
+        try:
+            next_url = next_url_ele[0].cssselect("a")[0].get('href')
+            if next_url:
+                self.get_content(self._baseurl + next_url)
+        except Exception as e:
+            print(e)
 
         # print(html_module.tostring(reviews[2]))
 
         return response
 
-    def build_review_url(self, url, page_num=1, region=DEFAULT_REGION):
-        name = "Logitech-MK270-Wireless-Keyboard-Windows"
-        asin = "B00CL6353A"
+    def build_review_url(self, name, asin, page_num=1, region=DEFAULT_REGION):
+        # name = "Jelly-Comb-Keyboard-Wireless-Rechargeable"
+        # asin = "B07B2VHQ3Z"
 
         base = build_base_url(region)
         url = REVIEW_URL % (base, name, asin, page_num)
@@ -306,8 +319,13 @@ class AmzProduct(object):
 
 
 if __name__ == '__main__':
-    amz = AmzSearch('keyboard', page=5, region='UK')
-    print(amz._products)
+    # amz = AmzSearch('keyboard', page=5, region='UK')
+    # print(amz._products)
     # last_item = amz.rget(-1)
-    # pro = AmzProduct("url", page=2, region="UK")
+    pro = AmzProduct("Yamaha-PSR-F51-Keyboard",
+                     "B01KTHMK4W", page=1, region="DE")
+    pro.get_content(pro.review_url)
+    for p in pro._reviews:
+        print(p[3])
+    print(len(pro._reviews))
     # print(amz._urls)
