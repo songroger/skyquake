@@ -1,6 +1,6 @@
 from lxml import html as html_module
-from config import DEFAULT_REGION, SEARCH_URL, PAGE_LIMIT, HEADERS, REVIEW_URL
-from utils import build_base_url
+from .config import DEFAULT_REGION, SEARCH_URL, PAGE_LIMIT, HEADERS, REVIEW_URL
+from .utils import build_base_url
 from requests import get
 
 
@@ -50,22 +50,35 @@ class AmzSearch(object):
     def __init__(self, query=None, page=1, region=DEFAULT_REGION, url=None, html=None, html_element=None, products=None):
         self._urls = [self.build_url(query=query, page_num=p, region=region)
                       for p in range(1, page + 1)] if page < PAGE_LIMIT else []
-        self.get_content(self._urls[0])
+        self._baseurl = build_base_url(region)
+        self.search_url = self.build_url(query=query, page_num=page, region=region)
+        self.query = query
+        # self.get_content(self._urls[0])
 
-    def get_content(self, url):
+    def get_content(self, url=None):
+        if not url:
+            url = self.search_url
         response = get(url, headers=HEADERS, verify=False, timeout=30)
         parser = html_module.fromstring(response.text)
         path = '//a[@class="a-link-normal a-text-normal"]'
+        next_path = '//li[@class="a-last"]'
 
         urls = parser.xpath(path)
+        next_url_ele = parser.xpath(next_path)
 
-        for u in urls[2:5]:
+        for u in urls:
             name = u.cssselect("span")
-            print(name[0].text)
-            print(u.get('href'))
+            title = name[0].text
+            purl = self._baseurl + u.get('href')
+            self._products.append((self.query, title, purl))
             # print(html_module.tostring(u))
 
-        print(len(urls))
+        try:
+            next_url = next_url_ele[0].cssselect("a")[0].get('href')
+            if next_url:
+                self.get_content(self._baseurl + next_url)
+        except Exception as e:
+            print(e)
 
         # print(html_module.tostring(urls[2]))
 
@@ -252,6 +265,7 @@ class AmzProduct(object):
         self._urls = [self.build_review_url(url, page_num=p, region=region)
                       for p in range(1, page + 1)] if page < PAGE_LIMIT else []
         # for u in self._urls:
+        print(self._urls)
         self.get_content(self._urls[0])
 
     def get_content(self, url):
@@ -292,7 +306,8 @@ class AmzProduct(object):
 
 
 if __name__ == '__main__':
-    # amz = AmzSearch('keyboard', page=5, region='UK')
+    amz = AmzSearch('keyboard', page=5, region='UK')
+    print(amz._products)
     # last_item = amz.rget(-1)
-    pro = AmzProduct("url", page=2, region="UK")
+    # pro = AmzProduct("url", page=2, region="UK")
     # print(amz._urls)
