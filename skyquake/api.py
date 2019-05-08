@@ -290,12 +290,6 @@ class AmzProduct(object):
             self._reviews.append((name[0].text, title[0].text, content[0].text,
                                   date[0].text, rate[0].text[:3], review_id
                                   ))
-            # print(name[0].text)
-            # print(rate[0].text[:3])
-            # print(date[0].text)
-            # print(title[0].text)
-            # print(content[0].text)
-            # print(html_module.tostring(r))
 
         try:
             next_url = next_url_ele[0].cssselect("a")[0].get('href')
@@ -328,4 +322,3 @@ if __name__ == '__main__':
     for p in pro._reviews:
         print(p[3])
     print(len(pro._reviews))
-    # print(amz._urls)
