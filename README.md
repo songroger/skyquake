@@ -9,4 +9,17 @@
 
 Despite its name, skyquake is some python APIs for amazon search
 
-## Usage
+## Install
+
+1. Clone
+
+```
+
+    git clone git@github.com:songroger/skyquake.git
+    cd inspie
+    python setup.py install
+```
+
+2. pip
+
+`pip install git+https://github.com/songroger/skyquake.git@master`
