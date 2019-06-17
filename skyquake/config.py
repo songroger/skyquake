@@ -30,3 +30,5 @@ SEARCH_URL = '%s/s?k=%s&page=%s'
 
 # /Authentic-Cigarette-Starter-3000mAh-PEACEVAPETM/product-reviews/B079RXYMF8/ref=cm_cr_getr_d_paging_btm_next_3?ie=UTF8&reviewerType=all_reviews&pageNumber=2
 REVIEW_URL = "%s/%s/product-reviews/%s/?reviewerType=all_reviews&pageNumber=%s"
+
+QUESTION_URL = "%s/ask/questions/asin/%s/%s/ref=ask_dp_iaw_ql_hza?isAnswered=true"

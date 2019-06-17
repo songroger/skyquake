@@ -1,5 +1,5 @@
 from lxml import html as html_module
-from .config import DEFAULT_REGION, SEARCH_URL, PAGE_LIMIT, HEADERS, REVIEW_URL
+from .config import DEFAULT_REGION, SEARCH_URL, PAGE_LIMIT, HEADERS, REVIEW_URL, QUESTION_URL
 from .utils import build_base_url
 from requests import get
 
@@ -312,13 +312,73 @@ class AmzProduct(object):
         return url
 
 
+class AmzQuestion(object):
+    """
+    question
+    """
+    _questions = []
+
+    def __init__(self, asin, page=1, region=DEFAULT_REGION):
+        self._baseurl = build_base_url(region)
+        self.question_url = self.build_question_url(asin, page_num=page, region=region)
+        # self.get_content(self.review_url)
+
+    def get_content(self, url=None):
+        if not url:
+            url = self.question_url
+        response = get(url, headers=HEADERS, verify=False, timeout=30)
+        parser = html_module.fromstring(response.text)
+        path = '//div[@data-hook="review"]'
+        next_path = '//li[@class="a-last"]'
+
+        reviews = parser.xpath(path)
+        next_url_ele = parser.xpath(next_path)
+
+        for r in reviews:
+            name = r.cssselect("div.a-profile-content > span")
+            rate = r.cssselect("span.a-icon-alt")
+            date = r.cssselect("span.review-date")
+            title = r.cssselect("a.review-title > span")
+            content = r.cssselect("span.review-text-content > span")
+            review_id = r.xpath('@id')[0]
+            self._reviews.append((name[0].text, title[0].text, content[0].text,
+                                  date[0].text, rate[0].text[:3], review_id
+                                  ))
+
+        try:
+            next_url = next_url_ele[0].cssselect("a")[0].get('href')
+            if next_url:
+                self.get_content(self._baseurl + next_url)
+        except Exception as e:
+            print(e)
+
+        # print(html_module.tostring(reviews[2]))
+
+        return response
+
+    def build_question_url(self, asin, page_num=1, region=DEFAULT_REGION):
+        # name = "Jelly-Comb-Keyboard-Wireless-Rechargeable"
+        # asin = "B07B2VHQ3Z"
+
+        base = build_base_url(region)
+        url = QUESTION_URL % (base, asin, page_num)
+
+        return url
+
+
 if __name__ == '__main__':
     # amz = AmzSearch('keyboard', page=5, region='UK')
     # print(amz._products)
     # last_item = amz.rget(-1)
-    pro = AmzProduct("Yamaha-PSR-F51-Keyboard",
-                     "B01KTHMK4W", page=1, region="DE")
-    pro.get_content(pro.review_url)
-    for p in pro._reviews:
-        print(p[3])
-    print(len(pro._reviews))
+
+    # pro = AmzProduct("Yamaha-PSR-F51-Keyboard",
+    #                  "B01KTHMK4W", page=1, region="DE")
+    # pro.get_content(pro.review_url)
+    # for p in pro._reviews:
+    #     print(p[3])
+    # print(len(pro._reviews))
+
+    pro = AmzQuestion("B01KTHMK4W", page=1, region="DE")
+    pro.get_content(pro.question_url)
+    for p in pro._questions:
+        print(p[0])

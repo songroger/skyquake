@@ -16,7 +16,7 @@ Despite its name, skyquake is some python APIs for amazon search
 ```
 
     git clone git@github.com:songroger/skyquake.git
-    cd inspie
+    cd skyquake
     python setup.py install
 ```
 
