@@ -328,27 +328,31 @@ class AmzQuestion(object):
             url = self.question_url
         response = get(url, headers=HEADERS, verify=False, timeout=30)
         parser = html_module.fromstring(response.text)
-        path = '//div[@data-hook="review"]'
+        path = '//div[@class="a-fixed-left-grid a-spacing-base"]'
         next_path = '//li[@class="a-last"]'
 
-        reviews = parser.xpath(path)
+        questions = parser.xpath(path)
         next_url_ele = parser.xpath(next_path)
 
-        for r in reviews:
-            name = r.cssselect("div.a-profile-content > span")
-            rate = r.cssselect("span.a-icon-alt")
-            date = r.cssselect("span.review-date")
-            title = r.cssselect("a.review-title > span")
-            content = r.cssselect("span.review-text-content > span")
-            review_id = r.xpath('@id')[0]
-            self._reviews.append((name[0].text, title[0].text, content[0].text,
-                                  date[0].text, rate[0].text[:3], review_id
-                                  ))
+        for r in questions:
+            qs = r.cssselect("a.a-link-normal > span.a-declarative")
+            an = r.cssselect("div.a-col-right > span")
+            name = r.cssselect("span.a-profile-name")
+            date = r.cssselect("span.aok-align-center")
+            qid = r.cssselect("span.askInlineAnswers")
+            # qid = r.xpath('@id')[0]
+            try:
+                self._questions.append((qs[0].text, an[0].text, name[0].text,
+                                        date[0].text, qid[0].xpath('@id')[0]
+                                        ))
+            except Exception as e:
+                pass
 
         try:
             next_url = next_url_ele[0].cssselect("a")[0].get('href')
             if next_url:
-                self.get_content(self._baseurl + next_url)
+                print(next_url)
+                # self.get_content(self._baseurl + next_url)
         except Exception as e:
             print(e)
 
@@ -378,7 +382,7 @@ if __name__ == '__main__':
     #     print(p[3])
     # print(len(pro._reviews))
 
-    pro = AmzQuestion("B01KTHMK4W", page=1, region="DE")
+    pro = AmzQuestion("B07PWZTGCY", page=1, region="US")
     pro.get_content(pro.question_url)
     for p in pro._questions:
-        print(p[0])
+        print(p)
