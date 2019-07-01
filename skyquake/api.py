@@ -338,7 +338,7 @@ class AmzQuestion(object):
         next_url_ele = parser.xpath(next_path)
 
         for r in questions:
-            qs = r.cssselect("a.a-link-normal > span.a-declarative")
+            qs = r.cssselect("div.a-col-right > a.a-link-normal > span.a-declarative")
             an = r.cssselect("div.a-col-right > span")
             name = r.cssselect("span.a-profile-name")
             date = r.cssselect("span.aok-align-center")
@@ -382,10 +382,11 @@ if __name__ == '__main__':
     #                  "B01KTHMK4W", page=1, region="DE")
     # pro.get_content(pro.review_url)
     # for p in pro._reviews:
+
     #     print(p[3])
     # print(len(pro._reviews))
 
-    pro = AmzQuestion("B07PWZTGCY", page=1, region="US")
+    pro = AmzQuestion("B01JP2KZH6", page=1, region="US")
     pro.get_content(pro.question_url)
     for p in pro._questions:
-        print(p)
+        print(p[0])
