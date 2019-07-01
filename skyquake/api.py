@@ -47,12 +47,13 @@ class AmzSearch(object):
 
     """
 
-    def __init__(self, query=None, page=1, region=DEFAULT_REGION, url=None, html=None, html_element=None, products=None):
+    def __init__(self, query=None, limit=10, page=1, region=DEFAULT_REGION, url=None, html=None, html_element=None, products=None):
         self._urls = [self.build_url(query=query, page_num=p, region=region)
                       for p in range(1, page + 1)] if page < PAGE_LIMIT else []
         self._baseurl = build_base_url(region)
         self.search_url = self.build_url(query=query, page_num=page, region=region)
         self.query = query
+        self.limit = int(limit)
         # self.get_content(self._urls[0])
 
     def get_content(self, url=None):
@@ -75,7 +76,7 @@ class AmzSearch(object):
 
         try:
             next_url = next_url_ele[0].cssselect("a")[0].get('href')
-            if next_url:
+            if next_url and len(self._products) < self.limit:
                 self.get_content(self._baseurl + next_url)
         except Exception as e:
             print(e)
@@ -262,11 +263,12 @@ class AmzProduct(object):
     """
     _reviews = []
 
-    def __init__(self, name, asin, page=1, region=DEFAULT_REGION):
+    def __init__(self, name, asin, limit=10, page=1, region=DEFAULT_REGION):
         self._urls = [self.build_review_url(name, asin, page_num=p, region=region)
                       for p in range(1, page + 1)] if page < PAGE_LIMIT else []
         self._baseurl = build_base_url(region)
         self.review_url = self.build_review_url(name, asin, page_num=page, region=region)
+        self.limit = int(limit)
         # self.get_content(self.review_url)
 
     def get_content(self, url=None):
@@ -293,7 +295,7 @@ class AmzProduct(object):
 
         try:
             next_url = next_url_ele[0].cssselect("a")[0].get('href')
-            if next_url:
+            if next_url and len(self._reviews) < self.limit:
                 self.get_content(self._baseurl + next_url)
         except Exception as e:
             print(e)
@@ -318,9 +320,10 @@ class AmzQuestion(object):
     """
     _questions = []
 
-    def __init__(self, asin, page=1, region=DEFAULT_REGION):
+    def __init__(self, asin, limit=10, page=1, region=DEFAULT_REGION):
         self._baseurl = build_base_url(region)
         self.question_url = self.build_question_url(asin, page_num=page, region=region)
+        self.limit = int(limit)
         # self.get_content(self.review_url)
 
     def get_content(self, url=None):
@@ -350,9 +353,9 @@ class AmzQuestion(object):
 
         try:
             next_url = next_url_ele[0].cssselect("a")[0].get('href')
-            if next_url:
+            if next_url and len(self._questions) < self.limit:
                 print(next_url)
-                # self.get_content(self._baseurl + next_url)
+                self.get_content(self._baseurl + next_url)
         except Exception as e:
             print(e)
 
